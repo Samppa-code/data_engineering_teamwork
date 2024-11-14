@@ -20,28 +20,20 @@ dag = DAG(
     schedule='@daily',
 )
 
-# Define tasks
-
-# Test start task
-def print_start_message():
-    print('Starting the ETL pipeline...')
-
-start_task = PythonOperator(
-    task_id='start_task',
-    python_callable=print_start_message,
+# DEFINE TASKS
+# TASK 1: Extract task to download and extract the dataset from Kaggle
+extract_task = PythonOperator(
+    task_id='extract_task',
+    python_callable=extract_file,
     dag=dag,
 )
 
-# Test end task
-def print_result():
-    print('ETL pipeline completed successfully!')
+# TASK 2: Transform the dataset
+# extracted_file_path = kwargs['ti'].xcom_pull(key='csv_file_path', task_ids='extract_task')
 
-end_task = PythonOperator(
-    task_id='end_task',
-    python_callable=print_result,
-    dag=dag,
-)
+
+# TASK 3: Load the transformed dataset into a database
 
 
 # Set task dependencies for the ETL pipeline
-start_task >> end_task
+extract_task
