@@ -12,17 +12,17 @@ def extract_file(**kwargs):
     api.authenticate()
     
     # Download the file from Kaggle to the current directory
-    api.dataset_download_file("muthuj7/weather-dataset", path=os.getenv('PROJECT_ROOT', './data'))
+    api.dataset_download_file("muthuj7/weather-dataset", path=os.getenv('PROJECT_ROOT' './'))
     
     # Define paths for the file
-    downloaded_file_path = os.path.join('PROJECT_ROOT', './data/weather.csv')
+    downloaded_file_path = os.path.join('PROJECT_ROOT', './weather.csv')
     zip_file_path = downloaded_file_path + '.zip'
 
     # Check if the downloaded file is a ZIP file
     if zipfile.is_zipfile(zip_file_path):
         # Extract the file to the current directory if it's a ZIP file
         with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-            zip_ref.extractall('PROJECT_ROOT, ./data')
+            zip_ref.extractall('PROJECT_ROOT' './')
         # Remove the ZIP file
         os.remove(zip_file_path)
     
