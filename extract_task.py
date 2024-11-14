@@ -2,11 +2,8 @@
 
 # Import necessary libraries
 import os 
-import zipfile 
-from airflow.operators.python import PythonOperator
+import zipfile
 from kaggle.api.kaggle_api_extended import KaggleApi
-# Import dag from main_dag
-from main_dag import dag
 
 # Define the function to extract the file from Kaggle
 def extract_file(**kwargs):
@@ -31,10 +28,3 @@ def extract_file(**kwargs):
     
     # Push the file to XCom for further processing
     kwargs['ti'].xcom_push(key='csv_file_path', value=downloaded_file_path)
-
-# Define the task
-extract_task = PythonOperator(
-    task_id='extract_task',
-    python_callable=extract_file,
-    dag=dag,
-)
