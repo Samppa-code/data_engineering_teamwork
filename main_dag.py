@@ -5,8 +5,9 @@ from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.operators.python import PythonOperator
 
-# Import other modules from your project
+# Import other modules from the project
 from extract_task import extract_file
+from transform_task_clean import clean_data
 
 # Define the DAG
 dag = DAG(
@@ -21,19 +22,25 @@ dag = DAG(
 )
 
 # DEFINE TASKS
-# TASK 1: Extract task to download and extract the dataset from Kaggle
+# TASK 1: Download and extract the dataset from Kaggle
 extract_task = PythonOperator(
     task_id='extract_task',
     python_callable=extract_file,
     dag=dag,
 )
 
-# TASK 2: Transform the dataset
-# extracted_file_path = kwargs['ti'].xcom_pull(key='csv_file_path', task_ids='extract_task')
+# TASK 2a: Clean the extracted dataset
+clean_task = PythonOperator(
+    task_id='clean_task',
+    python_callable=clean_data,
+    dag=dag,
+)
+# TASK 2b:
 
+# TASK 3:
 
-# TASK 3: Load the transformed dataset into a database
+# TASK 4:
 
 
 # Set task dependencies for the ETL pipeline
-extract_task
+extract_task >> clean_task
