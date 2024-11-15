@@ -1,44 +1,78 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
-import pandas as pd
-import os
+from airflow.operators.python_operator import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 from datetime import datetime, timedelta
-from kaggle.api.kaggle_api_extended import KaggleApi
-import validate_data
+
+# Import task functions
+from data_engineering_teamwork.extract_task import extract_file
+from data_engineering_teamwork.transform_task_clean import clean_data
+from data_engineering_teamwork.transform_task import transform_daily_and_wind_strength, transform_monthly_and_mode_precip
+from data_engineering_teamwork.validate_task import validate_data
+from data_engineering_teamwork.load_task import load_data
 
 # Default arguments for the DAG
 default_args = {
-    'owner': 'Team_2',
-    'depends_on_past': False,
-    'start_date': datetime(2024,11,14),
+    'owner': 'team2',
+    'start_date': datetime(2024, 11, 14),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
 
 # Define the DAG
 dag = DAG(
-    'weather_etl_pipeline',
+    'Teamwork_weather_etl_pipeline',
     default_args=default_args,
-    description='ETL pipeline for weather data with validation and trigger rules',
+    description='ETL pipeline for weather data teamwork',
     schedule_interval='@daily',
 )
-# Task definitions
 
-# Extract data task
+# Define tasks
+extract_task = PythonOperator(
+    task_id='extract_task',
+    python_callable=extract_file,
+    provide_context=True,
+    dag=dag,
+)
 
-# Transform data task
+clean_task = PythonOperator(
+    task_id='clean_task',
+    python_callable=clean_data,
+    provide_context=True,
+    TriggerRule=TriggerRule.ALL_SUCCESS,
+    dag=dag,
+)
 
-# Validate data task
+transform_daily_and_wind_strength_task = PythonOperator(
+    task_id='transform_daily_and_wind_strength_task',
+    python_callable=transform_daily_and_wind_strength,
+    provide_context=True,
+    TriggerRule=TriggerRule.ALL_SUCCESS,
+    dag=dag,
+)
+
+transform_monthly_and_mode_precip_task = PythonOperator(
+    task_id='transform_monthly_and_mode_precip_task',
+    python_callable=transform_monthly_and_mode_precip,
+    provide_context=True,
+    TriggerRule=TriggerRule.ALL_SUCCESS,
+    dag=dag,
+)
+
 validate_task = PythonOperator(
-    task_id='validate_data',
+    task_id='validate_task',
     python_callable=validate_data,
     provide_context=True,
     trigger_rule=TriggerRule.ALL_SUCCESS,
     dag=dag,
 )
 
-# Load data task
+load_task = PythonOperator(
+    task_id='load_task',
+    python_callable=load_data,
+    provide_context=True,
+    trigger_rule=TriggerRule.ALL_SUCCESS,
+    dag=dag,
+)
 
 # Set task dependencies
-extract_task >> transform_task >> validate_task >> load_task
+extract_task >> clean_task >> [transform_daily_and_wind_strength_task, transform_monthly_and_mode_precip_task] >> validate_task >> load_task
