@@ -60,6 +60,8 @@ def load_data(**kwargs):
         ))
 
     # Insert data into monthly_weather table
+    # statement uses placeholders (?) for the values to be inserted,
+    # which are provided as a tuple in the second argument of the execute() method
     for index, row in monthly_df.iterrows():
         cursor.execute('''
             INSERT INTO monthly_weather (

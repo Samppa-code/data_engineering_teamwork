@@ -11,12 +11,10 @@ def transform_daily_and_wind_strength(**kwargs):
     df = pd.read_csv(file_path)
 
     # Calculate daily averages for temperature, humidity, and wind speed
-
     daily_avg = df.groupby('Formatted Date').agg(
         avg_temperature_c=('Temperature (C)', 'mean'),
         avg_humidity=('Humidity', 'mean'),
         avg_wind_speed_kmh=('Wind Speed (km/h)', 'mean'),
-
     ).reset_index()
     
     # Classify wind strength
@@ -49,9 +47,11 @@ def transform_daily_and_wind_strength(**kwargs):
         'avg_humidity',     
         'avg_wind_speed_kmh'  
     ]
-
+    # Save the transformed data to a new CSV file
     transform_daily_weather_file_path = '/tmp/daily_avg_and_wind_strength_data.csv'
     daily_weather.to_csv(transform_daily_weather_file_path, index=False)
+
+    # Push the transformed data to XCom for further processing
     kwargs['ti'].xcom_push(key='transform_daily_weather_file_path', value=transform_daily_weather_file_path)
 
 def transform_monthly_and_mode_precip(**kwargs):
@@ -83,5 +83,7 @@ def transform_monthly_and_mode_precip(**kwargs):
 
     transform_monthly_weather_file_path = '/tmp/monthly_avg_and_mode_precip_data.csv'
     monthly_weather.to_csv(transform_monthly_weather_file_path, index=False)
+    
+    # Push the transformed data to XCom for further processing
     kwargs['ti'].xcom_push(key='transform_monthly_weather_file_path', value=transform_monthly_weather_file_path)
 

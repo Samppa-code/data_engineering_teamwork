@@ -12,12 +12,6 @@ def validate_data(**kwargs):
     daily_df = pd.read_csv(daily_file_path)
     monthly_df = pd.read_csv(monthly_file_path)
     
-    # Print the data for inspection
-    print("Daily DataFrame:")
-    print(daily_df.head())
-    print("Monthly DataFrame:")
-    print(monthly_df.head())
-     
     # Check if there are any missing values
     if daily_df.isnull().sum().sum() > 0:
         print("Daily data contains missing values")
