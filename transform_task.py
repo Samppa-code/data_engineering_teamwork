@@ -1,14 +1,22 @@
 import pandas as pd
 
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime, timedelta
+import sqlite3
+
+# daliy_weather
 def transform_daily_and_wind_strength(**kwargs):
     file_path = kwargs['ti'].xcom_pull(key='cleaned_file_path')
     df = pd.read_csv(file_path)
 
     # Calculate daily averages for temperature, humidity, and wind speed
+
     daily_avg = df.groupby('Formatted Date').agg(
         avg_temperature_c=('Temperature (C)', 'mean'),
         avg_humidity=('Humidity', 'mean'),
         avg_wind_speed_kmh=('Wind Speed (km/h)', 'mean'),
+
     ).reset_index()
     
     # Classify wind strength
@@ -59,6 +67,7 @@ def transform_monthly_and_mode_precip(**kwargs):
     ).reset_index()
     monthly_mode.columns = ['month', 'mode_precip_type']
     
+
     monthly_avg = df.groupby('month').agg(
         avg_temperature_c=('Temperature (C)', 'mean'),
         avg_apparent_temperature_c=('Apparent Temperature (C)', 'mean'),
@@ -68,9 +77,11 @@ def transform_monthly_and_mode_precip(**kwargs):
         avg_pressure_millibars=('Pressure (millibars)', 'mean')
     ).reset_index()
 
+
     required_columns = monthly_avg[['month', 'avg_temperature_c', 'avg_apparent_temperature_c', 'avg_humidity', 'avg_wind_speed_kmh', 'avg_visibility_km', 'avg_pressure_millibars']]
     monthly_weather = pd.merge(required_columns, monthly_mode, on='month', how='left')
 
     transform_monthly_weather_file_path = '/tmp/monthly_avg_and_mode_precip_data.csv'
     monthly_weather.to_csv(transform_monthly_weather_file_path, index=False)
     kwargs['ti'].xcom_push(key='transform_monthly_weather_file_path', value=transform_monthly_weather_file_path)
+
