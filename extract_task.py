@@ -1,5 +1,4 @@
 # extract_task.py
-
 # Import necessary libraries
 import os 
 import zipfile
