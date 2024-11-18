@@ -38,7 +38,7 @@ clean_task = PythonOperator(
     task_id='clean_task',
     python_callable=clean_data,
     provide_context=True,
-    TriggerRule=TriggerRule.ALL_SUCCESS,
+    trigger_rule='all_success',
     dag=dag,
 )
 
@@ -46,7 +46,7 @@ transform_daily_and_wind_strength_task = PythonOperator(
     task_id='transform_daily_and_wind_strength_task',
     python_callable=transform_daily_and_wind_strength,
     provide_context=True,
-    TriggerRule=TriggerRule.ALL_SUCCESS,
+    trigger_rule='all_success',
     dag=dag,
 )
 
@@ -54,7 +54,7 @@ transform_monthly_and_mode_precip_task = PythonOperator(
     task_id='transform_monthly_and_mode_precip_task',
     python_callable=transform_monthly_and_mode_precip,
     provide_context=True,
-    TriggerRule=TriggerRule.ALL_SUCCESS,
+    trigger_rule='all_success',
     dag=dag,
 )
 
@@ -62,7 +62,7 @@ validate_task = PythonOperator(
     task_id='validate_task',
     python_callable=validate_data,
     provide_context=True,
-    trigger_rule=TriggerRule.ALL_SUCCESS,
+    trigger_rule='all_success',
     dag=dag,
 )
 
@@ -70,7 +70,7 @@ load_task = PythonOperator(
     task_id='load_task',
     python_callable=load_data,
     provide_context=True,
-    trigger_rule=TriggerRule.ALL_SUCCESS,
+    trigger_rule='all_success',
     dag=dag,
 )
 
