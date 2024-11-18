@@ -13,7 +13,7 @@ from data_engineering_teamwork.load_task import load_data
 # Default arguments for the DAG
 default_args = {
     'owner': 'team2',
-    'start_date': datetime(2024, 11, 14),
+    'start_date': datetime(2024, 11, 17),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
