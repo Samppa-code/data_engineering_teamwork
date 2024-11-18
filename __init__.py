@@ -1,0 +1,2 @@
+# This file can be empyt, but it must exist in the data_engineering_teamwork folder. 
+# Because of the __init__.py file, Python will treat the data_engineering_teamwork folder as a package, allowing you to import modules from it.

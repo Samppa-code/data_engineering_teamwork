@@ -11,17 +11,21 @@ def extract_file(**kwargs):
     api.authenticate()
     
     # Download the file from Kaggle
-    api.dataset_download_file('muthuj7/weather-dataset', file_name='weatherHistory.csv', path='/home/linnea/airflow/datasets/')
+
+    api.dataset_download_file('muthuj7/weather-dataset', file_name='weatherHistory.csv', path='/home/samu/airflow/datasets/')
     
     # Define paths for the file
-    downloaded_file_path = '/home/linnea/airflow/datasets/weatherHistory.csv'
+    downloaded_file_path = '/home/samu/airflow/datasets/weatherHistory.csv'
+
+
     zip_file_path = downloaded_file_path + '.zip'
 
     # Check if the downloaded file is a ZIP file
     if zipfile.is_zipfile(zip_file_path):
         # Extract the file to the current directory if it's a ZIP file
         with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-            zip_ref.extractall('/home/linnea/airflow/datasets/')
+            zip_ref.extractall('/home/samu/airflow/datasets/')
+
         # Remove the ZIP file
         os.remove(zip_file_path)
     
