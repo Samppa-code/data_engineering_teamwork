@@ -66,8 +66,13 @@ def transform_monthly_and_mode_precip(**kwargs):
     df = pd.read_csv(cleaned_file_path)
 
     # Monthly Mode for Precipitation Type， 1point
-    # transform month as 'yyyy-mm'
-    df['Formatted Date'] = pd.to_datetime(df['Formatted Date'], errors='coerce',utc=True)
+    # transform month as 'yyyy-mm' 
+    """
+    I am not sure if you need the modified the line of code below, but it is necessary for my system. 
+    Because when cleaning the data, Formatted Date has been converted to the time format, 
+    which is logically unnecessary.
+    """
+    df['Formatted Date'] = pd.to_datetime(df['Formatted Date'])
     df['month'] = df['Formatted Date'].dt.to_period('M')
 
     # If the monthly data has a mode, return the mode; 
