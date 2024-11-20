@@ -9,55 +9,39 @@ def transform_daily_and_wind_strength(**kwargs):
     file_path = kwargs['ti'].xcom_pull(key='cleaned_file_path')
     df = pd.read_csv(file_path)
 
-    # Calculate daily averages for temperature, humidity, and wind speed，1 point
+    # Calculate daily averages
     daily_avg = df.groupby('Formatted Date').agg(
         avg_temperature_c=('Temperature (C)', 'mean'),
+        avg_apparent_temperature_c=('Apparent Temperature (C)','mean'),
         avg_humidity=('Humidity', 'mean'),
         avg_wind_speed_kmh=('Wind Speed (km/h)', 'mean'),
+        avg_visibility_km = ('Visibility (km)','mean'),
+        avg_pressure_millibars=('Pressure (millibars)','mean'),
 ).reset_index()
     
-    # Classify wind strength，1 point
+    # Classify wind strength
     bins=[0,1.5,3.3,5.4,7.9,10.7,13.8,17.1,20.7,24.4,28.4,32.6,float('inf')]
     labels = ['Calm', 'Light Air', 'Light Breeze', 'Gentle Breeze', 'Moderate Breeze', 
               'Fresh Breeze', 'Strong Breeze', 'Near Gale', 'Gale', 'Strong Gale', 'Storm', 'Violent Storm']    
     # conver from  km/h to m/s，and use pd.cut to classification
     df['wind_strength'] = pd.cut(df['Wind Speed (km/h)'] / 3.6, bins=bins, labels=labels, right=True)
+    
+    # Prepare wind strength summary by day
+    # Group by 'Formatted Date' and find the most common wind strength
+    wind_strength_summary = df.groupby('Formatted Date')['wind_strength'].agg(lambda x: x.mode()[0]).reset_index()
 
-    # daily weather(avg columns + required columns)
-    # Keep only relevant columns and drop duplicates
-    required_colunms = df[['Formatted Date', 'Temperature (C)','Apparent Temperature (C)','Humidity','Wind Speed (km/h)', 'Visibility (km)', 'Pressure (millibars)','wind_strength']].drop_duplicates()
+    # Merge daily averages with wind strength
+    daily_weather = pd.merge(daily_avg, wind_strength_summary, on='Formatted Date', how='left')
 
-    # Merge the daily averages with the other columns to be 'daily_weather'
-    daily_weather = pd.merge(required_colunms,daily_avg,on='Formatted Date',how= 'left')
-
-    # Rename columns to match the 'daily_weather' table schema
-    daily_weather.columns = [
-        'formatted_date',     
-        'temperature_c',      
-        'apparent_temperature_c',  
-        'humidity',          
-        'wind_speed_kmh',     
-        'visibility_km',      
-        'pressure_millibars', 
-        'wind_strength',     
-        'avg_temperature',  
-        'avg_humidity',     
-        'avg_wind_speed_kmh'  
-    ]
+    # Rename column 'Formatted Date' to 'formatted_date'
+    daily_weather = daily_weather.rename(columns={'Formatted Date': 'formatted_date'})
 
     transform_daily_weather_file_path = '/tmp/daily_avg_and_wind_strength_data.csv'
-    # save file, 1point
+    # save file
     daily_weather.to_csv(transform_daily_weather_file_path,index = False) 
-    # XCom push data, 1 point
+    # XCom push data
     kwargs['ti'].xcom_push(key='transform_daily_weather_file_path', value=transform_daily_weather_file_path)
 
-
-transform_daily_and_wind_strength_task = PythonOperator(
-    task_id = 'transform_daily_and_wind_strength_task',
-    python_callable = transform_daily_and_wind_strength,
-    provide_context = True,
-    dag = dag
-)
 
 
 # monthly_weather
@@ -65,13 +49,8 @@ def transform_monthly_and_mode_precip(**kwargs):
     cleaned_file_path = kwargs['ti'].xcom_pull(key='cleaned_file_path')
     df = pd.read_csv(cleaned_file_path)
 
-    # Monthly Mode for Precipitation Type， 1point
+    # Monthly Mode for Precipitation Type
     # transform month as 'yyyy-mm' 
-    """
-    I am not sure if you need the modified the line of code below, but it is necessary for my system. 
-    Because when cleaning the data, Formatted Date has been converted to the time format, 
-    which is logically unnecessary.
-    """
     df['Formatted Date'] = pd.to_datetime(df['Formatted Date'])
     df['month'] = df['Formatted Date'].dt.to_period('M')
 
@@ -92,8 +71,7 @@ def transform_monthly_and_mode_precip(**kwargs):
         avg_pressure_millibars=('Pressure (millibars)', 'mean')
     ).reset_index()
 
-    required_columns = monthly_avg[['month','avg_temperature_c','avg_apparent_temperature_c','avg_humidity','avg_visibility_km','avg_pressure_millibars']]
-    monthly_weather = pd.merge(required_columns, monthly_mode, on='month', how='left')
+    monthly_weather = pd.merge(monthly_avg, monthly_mode, on='month', how='left')
 
     # save to CSV
     transform_monthly_weather_file_path = '/tmp/monthly_avg_and_mode_precip_data.csv'
@@ -102,9 +80,3 @@ def transform_monthly_and_mode_precip(**kwargs):
     # XCom for Transformation
     kwargs['ti'].xcom_push(key='transform_monthly_weather_file_path', value = transform_monthly_weather_file_path)
     
-transform_monthly_and_mode_precip_task = PythonOperator(
-    task_id = 'transform_monthly_and_mode_precip_task',
-    python_callable = transform_monthly_and_mode_precip,
-    provide_context = True,
-    dag = dag
-)
