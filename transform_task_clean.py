@@ -2,11 +2,9 @@
 
 # Import necessary libraries
 import pandas as pd
-from datetime import datetime
 
+# Function to clean data
 def clean_data(**kwargs):
-    print("Cleaning data...")
-
     # Pull data from XCom
     extracted_file_path = kwargs['ti'].xcom_pull(key='csv_file_path', task_ids='extract_task')
     # If data is not found in XCom, raise an error
@@ -16,8 +14,10 @@ def clean_data(**kwargs):
     # Read the CSV file into a pandas DataFrame
     df = pd.read_csv(extracted_file_path)
 
-    # Convert the 'Formatted Date' column to proper date format using datetime library
-    df['Formatted Date'] = pd.to_datetime(df['Formatted Date'], format='%Y-%m-%d %H:%M:%S.%f %z')
+    # Convert the 'Formatted Date' column to proper date format
+    df['Formatted Date'] = pd.to_datetime(df['Formatted Date'], errors='coerce', utc=True)
+    # (yyyy-mm-dd hh:mm)
+    df['Formatted Date'] = df['Formatted Date'].dt.date
 
     # Handle missing values in critical columns
     # Replace missing values in 'Temperature (C)' column with median
