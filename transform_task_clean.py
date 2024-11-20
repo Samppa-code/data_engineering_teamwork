@@ -16,8 +16,10 @@ def clean_data(**kwargs):
 
     # Convert the 'Formatted Date' column to proper date format
     df['Formatted Date'] = pd.to_datetime(df['Formatted Date'], errors='coerce', utc=True)
-    # (yyyy-mm-dd hh:mm)
-    df['Formatted Date'] = df['Formatted Date'].dt.date
+    # something                                      
+    df['Formatted Date'] = df['Formatted Date'].dt.tz_convert('UTC+01:00')
+    # (yyyy-mm-dd)
+    df['Formatted Date'] = df['Formatted Date'].dt.tz_localize(None).dt.strftime('%Y-%m-%d')
 
     # Handle missing values in critical columns
     # Replace missing values in 'Temperature (C)' column with median
