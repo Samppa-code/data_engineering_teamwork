@@ -1,3 +1,6 @@
+import pandas
+import sqlite3
+
 def load_data(**kwargs):
     # Pull the file paths from XCom
     daily_file_path = kwargs['ti'].xcom_pull(key='transform_daily_weather_file_path')

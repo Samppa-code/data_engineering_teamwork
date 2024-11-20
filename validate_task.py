@@ -27,6 +27,7 @@ def validate_data(**kwargs):
     assert monthly_df['avg_humidity'].between(0, 1).all(), "Average humidity out of range in monthly data"
     assert monthly_df['avg_wind_speed_kmh'].ge(0).all(), "Average wind speed out of range in monthly data"
     
+    
     # Pass validation if all checks are successful
     kwargs['ti'].xcom_push(key='validated_daily_path', value=daily_file_path)
     kwargs['ti'].xcom_push(key='validated_monthly_path', value=monthly_file_path)

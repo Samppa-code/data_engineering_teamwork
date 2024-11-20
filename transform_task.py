@@ -43,7 +43,6 @@ def transform_daily_and_wind_strength(**kwargs):
     kwargs['ti'].xcom_push(key='transform_daily_weather_file_path', value=transform_daily_weather_file_path)
 
 
-
 # monthly_weather
 def transform_monthly_and_mode_precip(**kwargs):
     cleaned_file_path = kwargs['ti'].xcom_pull(key='cleaned_file_path')
