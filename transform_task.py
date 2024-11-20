@@ -2,8 +2,6 @@
 
 # Import necessary libraries
 import pandas as pd
-from airflow import DAG
-from airflow.operators.python import PythonOperator
 
 # Function to calculate daily averages
 def transform_daily_and_wind_strength(**kwargs):

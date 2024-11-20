@@ -7,11 +7,11 @@ from airflow.utils.trigger_rule import TriggerRule
 from datetime import datetime, timedelta
 
 # Import task functions
-from extract_task import extract_file
-from transform_task_clean import clean_data
-from transform_task import transform_daily_and_wind_strength, transform_monthly_and_mode_precip
-from validate_task import validate_data
-from load_task import load_data
+from data_engineering_teamwork.extract_task import extract_file
+from data_engineering_teamwork.transform_task_clean import clean_data
+from data_engineering_teamwork.transform_task import transform_daily_and_wind_strength, transform_monthly_and_mode_precip
+from data_engineering_teamwork.validate_task import validate_data
+from data_engineering_teamwork.load_task import load_data
 
 # Default arguments for the DAG
 default_args = {
