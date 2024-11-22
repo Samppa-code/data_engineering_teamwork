@@ -1,5 +1,8 @@
+# main_dag.py
+
+# Import necessary libraries
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 from datetime import datetime, timedelta
 
@@ -13,7 +16,7 @@ from data_engineering_teamwork.load_task import load_data
 # Default arguments for the DAG
 default_args = {
     'owner': 'team2',
-    'start_date': datetime(2024, 11, 17),
+    'start_date': datetime(2024, 11, 21),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
@@ -27,6 +30,7 @@ dag = DAG(
 )
 
 # Define tasks
+# Task 1: Download and extract the dataset
 extract_task = PythonOperator(
     task_id='extract_task',
     python_callable=extract_file,
@@ -34,6 +38,7 @@ extract_task = PythonOperator(
     dag=dag,
 )
 
+# Task 2: Clean the dataset
 clean_task = PythonOperator(
     task_id='clean_task',
     python_callable=clean_data,
@@ -42,6 +47,7 @@ clean_task = PythonOperator(
     dag=dag,
 )
 
+# Task 3a: Transform the dataset
 transform_daily_and_wind_strength_task = PythonOperator(
     task_id='transform_daily_and_wind_strength_task',
     python_callable=transform_daily_and_wind_strength,
@@ -50,6 +56,7 @@ transform_daily_and_wind_strength_task = PythonOperator(
     dag=dag,
 )
 
+# Task 3b: Transform the dataset
 transform_monthly_and_mode_precip_task = PythonOperator(
     task_id='transform_monthly_and_mode_precip_task',
     python_callable=transform_monthly_and_mode_precip,
@@ -58,6 +65,7 @@ transform_monthly_and_mode_precip_task = PythonOperator(
     dag=dag,
 )
 
+# Task 4: Validate the transformed dataset
 validate_task = PythonOperator(
     task_id='validate_task',
     python_callable=validate_data,
@@ -66,6 +74,7 @@ validate_task = PythonOperator(
     dag=dag,
 )
 
+# Task 5: Load the transformed dataset
 load_task = PythonOperator(
     task_id='load_task',
     python_callable=load_data,
@@ -74,5 +83,5 @@ load_task = PythonOperator(
     dag=dag,
 )
 
-# Set task dependencies
+# Define the task order
 extract_task >> clean_task >> [transform_daily_and_wind_strength_task, transform_monthly_and_mode_precip_task] >> validate_task >> load_task
