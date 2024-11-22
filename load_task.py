@@ -36,7 +36,7 @@ def load_data(**kwargs):
 
 
     # Create the monthly_weather table if it does not exist
-  cursor.execute('''
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS monthly_weather (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             month TEXT,
@@ -78,6 +78,4 @@ def load_data(**kwargs):
 
     # Commit the transaction and close the connection
     conn.commit()
-
     conn.close()
-
