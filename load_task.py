@@ -15,11 +15,14 @@ def load_data(**kwargs):
     conn = sqlite3.connect('/home/samu/airflow/databases/weather_data.db')
     cursor = conn.cursor()
 
+
       # Create the daily_weather table if it does not exist
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS daily_weather (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             formatted_date TEXT,
+
             avg_temperature_c REAL,
             avg_apparent_temperature_c REAL,
             avg_humidity REAL,
@@ -31,8 +34,9 @@ def load_data(**kwargs):
     ''')
 
 
+
     # Create the monthly_weather table if it does not exist
-    cursor.execute('''
+  cursor.execute('''
         CREATE TABLE IF NOT EXISTS monthly_weather (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             month TEXT,
@@ -46,12 +50,15 @@ def load_data(**kwargs):
         )
     ''')
 
+
      # Insert data into daily_weather table
+
     # statement uses placeholders (?) for the values to be inserted, 
     # which are provided as a tuple in the second argument of the execute() method.
     for index, row in daily_df.iterrows():
         cursor.execute('''
             INSERT INTO daily_weather (
+
                 formatted_date, avg_temperature_c, avg_apparent_temperature_c, avg_humidity, avg_wind_speed_kmh, avg_visibility_km, avg_pressure_millibars, wind_strength
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
@@ -66,8 +73,11 @@ def load_data(**kwargs):
             ) VALUES (?, ?, ?, ?, ?, ?, ?,?)
         ''', (
             row['month'], row['avg_temperature_c'], row['avg_apparent_temperature_c'], row['avg_humidity'], row['avg_wind_speed_kmh'],row['avg_visibility_km'], row['avg_pressure_millibars'], row['mode_precip_type']
+
         ))
 
     # Commit the transaction and close the connection
     conn.commit()
+
     conn.close()
+

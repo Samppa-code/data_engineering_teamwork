@@ -35,7 +35,7 @@ def clean_data(**kwargs):
     df.drop_duplicates(inplace=True)
 
     # Save the cleaned DataFrame to a new CSV file
-    cleaned_file_path = '/home/linnea/airflow/datasets/weatherHistory_cleaned.csv'
+    cleaned_file_path = '/home/samu/airflow/datasets/weatherHistory_cleaned.csv'
     df.to_csv(cleaned_file_path, index=False)
 
     # Push the cleaned file path to XCom
