@@ -6,6 +6,8 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 
 # Define the function to extract the file from Kaggle
 def extract_file(**kwargs):
+    # Print start message
+    print('Extracting the file from Kaggle...')
     # Create a Kaggle API instance
     api = KaggleApi()
     api.authenticate()
@@ -27,7 +29,10 @@ def extract_file(**kwargs):
             zip_ref.extractall('/home/samu/airflow/datasets/')
 
         # Remove the ZIP file
-        os.remove(zip_file_path)
+        
+    # Error handling for file not found
+    if not os.path.exists(downloaded_file_path):
+        raise FileNotFoundError(f"File '{downloaded_file_path}' not found.")
     
     # Push the file to XCom for further processing
     kwargs['ti'].xcom_push(key='csv_file_path', value=downloaded_file_path)

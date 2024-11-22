@@ -1,12 +1,10 @@
 # cleaning_data.py
+
 # Import necessary libraries
 import pandas as pd
-from datetime import datetime
 
+# Function to clean data
 def clean_data(**kwargs):
-    print("Cleaning data...")
-
-
     # Pull data from XCom
     extracted_file_path = kwargs['ti'].xcom_pull(key='csv_file_path', task_ids='extract_task')
     # If data is not found in XCom, raise an error
@@ -15,8 +13,14 @@ def clean_data(**kwargs):
 
     # Read the CSV file into a pandas DataFrame
     df = pd.read_csv(extracted_file_path)
-    # Convert the 'Formatted Date' column to proper date format using datetime library
-    df['Formatted Date'] = pd.to_datetime(df['Formatted Date'], format='%Y-%m-%d %H:%M:%S.%f %z')
+
+    # Convert the 'Formatted Date' column to proper date format
+    df['Formatted Date'] = pd.to_datetime(df['Formatted Date'], errors='coerce', utc=True)
+    # something                                      
+    df['Formatted Date'] = df['Formatted Date'].dt.tz_convert('UTC+01:00')
+    # (yyyy-mm-dd)
+    df['Formatted Date'] = df['Formatted Date'].dt.tz_localize(None).dt.strftime('%Y-%m-%d')
+
     # Handle missing values in critical columns
     # Replace missing values in 'Temperature (C)' column with median
     df['Temperature (C)'].fillna(df['Temperature (C)'].median(), inplace=True)
@@ -31,7 +35,6 @@ def clean_data(**kwargs):
     df.drop_duplicates(inplace=True)
 
     # Save the cleaned DataFrame to a new CSV file
-    # REMEMBERTO CHANGE THE PATH to match your environment
     cleaned_file_path = '/home/samu/airflow/datasets/weatherHistory_cleaned.csv'
     df.to_csv(cleaned_file_path, index=False)
 

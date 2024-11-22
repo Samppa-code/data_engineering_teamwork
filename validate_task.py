@@ -1,5 +1,9 @@
+# validate_task.py
+
+# Import necessary libraries
 import pandas as pd
 
+# Function to validate data
 def validate_data(**kwargs):
     # Pull the file paths from XCom
     daily_file_path = kwargs['ti'].xcom_pull(key='transform_daily_weather_file_path')
@@ -23,9 +27,9 @@ def validate_data(**kwargs):
         raise ValueError("Monthly data contains missing values")
     
     # Verify that values fall within expected ranges for daily data
-    assert daily_df['temperature_c'].between(-50, 50).all(), "Temperature out of range in daily data"
-    assert daily_df['humidity'].between(0, 1).all(), "Humidity out of range in daily data"
-    assert daily_df['wind_speed_kmh'].ge(0).all(), "Wind Speed out of range in daily data"
+    assert daily_df['avg_temperature_c'].between(-50, 50).all(), "Temperature out of range in daily data"
+    assert daily_df['avg_humidity'].between(0, 1).all(), "Humidity out of range in daily data"
+    assert daily_df['avg_wind_speed_kmh'].ge(0).all(), "Wind Speed out of range in daily data"
     
     # Verify that values fall within expected ranges for monthly data
     assert monthly_df['avg_temperature_c'].between(-50, 50).all(), "Average temperature out of range in monthly data"
