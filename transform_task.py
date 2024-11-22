@@ -1,4 +1,5 @@
 import pandas as pd
+
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
@@ -22,8 +23,7 @@ def transform_daily_and_wind_strength(**kwargs):
     # Classify wind strength
     bins=[0,1.5,3.3,5.4,7.9,10.7,13.8,17.1,20.7,24.4,28.4,32.6,float('inf')]
     labels = ['Calm', 'Light Air', 'Light Breeze', 'Gentle Breeze', 'Moderate Breeze', 
-              'Fresh Breeze', 'Strong Breeze', 'Near Gale', 'Gale', 'Strong Gale', 'Storm', 'Violent Storm']    
-    # conver from  km/h to m/s，and use pd.cut to classification
+              'Fresh Breeze', 'Strong Breeze', 'Near Gale', 'Gale', 'Strong Gale', 'Storm', 'Violent Storm']
     df['wind_strength'] = pd.cut(df['Wind Speed (km/h)'] / 3.6, bins=bins, labels=labels, right=True)
     
     # Prepare wind strength summary by day
@@ -42,25 +42,22 @@ def transform_daily_and_wind_strength(**kwargs):
     # XCom push data
     kwargs['ti'].xcom_push(key='transform_daily_weather_file_path', value=transform_daily_weather_file_path)
 
-
 # monthly_weather
 def transform_monthly_and_mode_precip(**kwargs):
     cleaned_file_path = kwargs['ti'].xcom_pull(key='cleaned_file_path')
     df = pd.read_csv(cleaned_file_path)
 
-    # Monthly Mode for Precipitation Type
-    # transform month as 'yyyy-mm' 
+    # Convert 'Formatted Date' to datetime and extract month names
     df['Formatted Date'] = pd.to_datetime(df['Formatted Date'])
-    df['month'] = df['Formatted Date'].dt.to_period('M')
+    df['month'] = df['Formatted Date'].dt.strftime('%B')  # Extract full month name (e.g., January)
 
-    # If the monthly data has a mode, return the mode; 
-    # if there are multiple modes with the same frequency, return the first one; if there is no mode, return pd.NA.
+    # Monthly Mode for Precipitation Type
     monthly_mode = df.groupby('month')['Precip Type'].apply(
         lambda x: x.mode().iloc[0] if not x.mode().empty else pd.NA
-        ).reset_index()
+    ).reset_index()
     monthly_mode.columns = ['month', 'mode_precip_type']
-    
-    # calculate monthly avg1 point,and rename columns
+
+    # Calculate overall monthly averages across all years
     monthly_avg = df.groupby('month').agg(
         avg_temperature_c=('Temperature (C)', 'mean'),
         avg_apparent_temperature_c=('Apparent Temperature (C)', 'mean'),
@@ -70,9 +67,18 @@ def transform_monthly_and_mode_precip(**kwargs):
         avg_pressure_millibars=('Pressure (millibars)', 'mean')
     ).reset_index()
 
+    # Merge average and mode data
     monthly_weather = pd.merge(monthly_avg, monthly_mode, on='month', how='left')
 
-    # save to CSV
+    # Ensure the months are ordered correctly (January to December)
+    month_order = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    monthly_weather['month'] = pd.Categorical(monthly_weather['month'], categories=month_order, ordered=True)
+    monthly_weather = monthly_weather.sort_values('month').reset_index(drop=True)
+
+
     transform_monthly_weather_file_path = '/tmp/monthly_avg_and_mode_precip_data.csv'
     monthly_weather.to_csv(transform_monthly_weather_file_path, index=False)
     
