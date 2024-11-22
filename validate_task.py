@@ -1,5 +1,4 @@
 # validate_task.py
-
 # Import necessary libraries
 import pandas as pd
 
